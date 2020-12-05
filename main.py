@@ -78,7 +78,7 @@ class CsvReader:
         plt.plot(dates, so2, label=csv_data[0][3])
         plt.grid()
         plt.xlabel('Dates')
-        plt.ylabel('Concentration (V µg/m³)')
+        plt.ylabel('Concentration (µg/m³)')
         plt.legend()
         plt.savefig(graph_name)
         plt.show()
