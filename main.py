@@ -23,7 +23,7 @@ class CsvReader:
             if y != 0:
                 data_row = []
                 for element in row:
-                    if x in [0, 1, 3, 5]:  # Only read from the 1st, 2nd, 4th, and 6th columns
+                    if x in [0, 1, 3, 5, 7, 9]:  # Only read from specific columns to ignore the units
                         if element == "nodata":  # If statement to store a no data reading as None
                             element = None
                         if y != 1:
@@ -31,7 +31,10 @@ class CsvReader:
                                 # Store the date in a dd/mm/yyyy format
                                 element = datetime.datetime.strptime(element, '%d/%m/%Y')
                             elif element is not None:
-                                element = int(element)  # Convert the concentrations to integers
+                                if x != 9:
+                                    element = int(element)  # Convert the concentrations to integers
+                                else:
+                                    element = float(element)  # Convert the concentrations to floats
                         data_row.append(element)
                     x += 1
                 csv_data.append(data_row)
@@ -46,37 +49,52 @@ class CsvReader:
         :param graph_name: The file name that the graph should be saved as
         """
         dates = []
-        ozones_sample = []
-        ozones = []
+        o3_sample = []
+        no = []
+        no_sample = []
+        o3 = []
         no2_sample = []
         no2 = []
         so2_sample = []
         so2 = []
+        co_sample = []
+        co = []
 
         for i in range(1, len(csv_data)):  # Ignore the 1st line as these are table headers
-            ozones_sample.append(csv_data[i][1])
-            no2_sample.append(csv_data[i][2])
-            so2_sample.append(csv_data[i][3])
+            o3_sample.append(csv_data[i][1])
+            no_sample.append(csv_data[i][2])
+            no2_sample.append(csv_data[i][3])
+            so2_sample.append(csv_data[i][4])
+            co_sample.append(csv_data[i][5])
 
-            # Sample every 30 days, changing the modulus will change the time period sampled
-            if i % 30 == 0 or i == len(csv_data):
-                ozones_avg = CsvReader.calculate_avg(ozones_sample)
+            # Sample every 180 days, changing the modulus will change the time period sampled
+            if i % 180 == 0 or i == len(csv_data):
+                o3_avg = CsvReader.calculate_avg(o3_sample)
+                no_avg = CsvReader.calculate_avg(no_sample)
                 no2_avg = CsvReader.calculate_avg(no2_sample)
                 so2_avg = CsvReader.calculate_avg(so2_sample)
+                co_avg = CsvReader.calculate_avg(co_sample)
 
-                ozones_sample = []
+                o3_sample = []
+                no_sample = []
                 no2_sample = []
                 so2_sample = []
+                co_sample = []
 
                 dates.append(csv_data[i][0])
-                ozones.append(ozones_avg)
+                o3.append(o3_avg)
+                no.append(no_avg)
                 no2.append(no2_avg)
                 so2.append(so2_avg)
+                co.append(co_avg)
 
-        plt.plot(dates, ozones, label=csv_data[0][1])
-        plt.plot(dates, no2, label=csv_data[0][2])
-        plt.plot(dates, so2, label=csv_data[0][3])
+        plt.plot(dates, o3, label=csv_data[0][1])
+        plt.plot(dates, no, label=csv_data[0][2])
+        plt.plot(dates, no2, label=csv_data[0][3])
+        plt.plot(dates, so2, label=csv_data[0][4])
+        plt.plot(dates, co, label=csv_data[0][5])
         plt.grid()
+        plt.title('Belfast Centre Air Pollution')
         plt.xlabel('Dates')
         plt.ylabel('Concentration (µg/m³)')
         plt.legend()
@@ -105,11 +123,9 @@ class CsvReader:
 if __name__ == '__main__':
     # Type in the complete file paths of the csv files in quotes
     # Use .\\ for a relative path to the main.py
-    file_paths = [".\\example_csv_1.csv",
-                  ".\\example_csv_2.csv"]
+    file_paths = [".\\AirPollutionData.csv"]
     # Type in the desired file names for the graphs in quotes, including the file format such as .svg or .eps
-    graph_names = ["example_graph_1.svg",
-                   "example_graph_2.svg"]
+    graph_names = ["AirPollutionData.svg"]
 
     if len(file_paths) == len(graph_names):  # Validation check to ensure the each csv file has a name for its graph
         j = 0
